@@ -29,9 +29,7 @@ uploaded_file = st.file_uploader(
 # =========================================
 # IF FILE EXISTS
 # =========================================
-
 if uploaded_file is not None:
-
     try:
 
         # Read Excel

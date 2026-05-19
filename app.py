@@ -4,7 +4,6 @@
 
 import streamlit as st
 import pickle
-import numpy as np
 
 # =========================================
 # LOAD MODEL
@@ -36,7 +35,7 @@ if st.button("Predict Sentiment"):
 
     if user_input.strip() != "":
 
-        # Transform text
+        # Convert text
         text_vector = vectorizer.transform([user_input])
 
         # Prediction
@@ -46,31 +45,13 @@ if st.button("Predict Sentiment"):
         st.success(prediction)
 
         # =========================================
-        # PROBABILITY SCORE
+        # CONFIDENCE SCORE
         # =========================================
 
-        try:
+        confidence = abs(model.decision_function(text_vector)[0])
 
-            # For models supporting probability
-            probabilities = model.predict_proba(text_vector)[0]
-
-            classes = model.classes_
-
-            st.subheader("Probability Scores")
-
-            for cls, prob in zip(classes, probabilities):
-                st.write(f"{cls}: {prob:.2%}")
-
-        except:
-
-            # LinearSVC does not support predict_proba
-            decision = model.decision_function(text_vector)[0]
-
-            confidence = abs(decision)
-
-            st.subheader("Confidence Score")
-
-            st.write(f"Confidence: {confidence:.2f}")
+        st.subheader("Confidence Score")
+        st.write(round(confidence, 2))
 
     else:
-        st.warning("Please enter some text")
+        st.warning("Please enter text")

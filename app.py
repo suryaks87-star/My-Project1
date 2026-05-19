@@ -39,7 +39,7 @@ uploaded_file = st.file_uploader(
     "📂 Upload your Excel file",
     type=["xlsx"]
 )
-
+'''
 if uploaded_file is None:
     st.info("👆 Upload dataset to see analysis")
     st.stop()
@@ -49,7 +49,8 @@ if uploaded_file is None:
 # =========================================
 
 df = pd.read_excel(uploaded_file)
-
+'''
+df=pd.read_excel("dataset.xlsx")
 st.subheader("📄 Dataset Preview")
 st.dataframe(df.head(), use_container_width=True)
 

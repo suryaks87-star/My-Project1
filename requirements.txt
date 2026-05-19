@@ -6,4 +6,5 @@ streamlit
 nltk
 matplotlib
 wordcloud
+seaborn
 

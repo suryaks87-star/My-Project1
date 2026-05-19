@@ -4,6 +4,7 @@
 
 import streamlit as st
 import pickle
+import numpy as np
 
 # =========================================
 # LOAD TRAINED MODEL
@@ -27,9 +28,7 @@ st.write("Predict whether text is Positive, Negative, or Neutral")
 # USER INPUT
 # =========================================
 
-user_input = st.text_area(
-    "Enter Your Text"
-)
+user_input = st.text_area("Enter Your Text")
 
 # =========================================
 # LABEL MAPPING
@@ -51,14 +50,14 @@ if st.button("Predict Sentiment"):
 
         try:
 
-            # Convert text into vector
+            # Convert text to vector
             text_vector = vectorizer.transform([user_input])
 
-            # Predict label
+            # Predict
             prediction = model.predict(text_vector)[0]
 
             # =========================================
-            # HANDLE BOTH NUMBER + TEXT LABELS
+            # HANDLE LABELS
             # =========================================
 
             if prediction in label_map:
@@ -67,7 +66,7 @@ if st.button("Predict Sentiment"):
                 final_prediction = str(prediction)
 
             # =========================================
-            # DISPLAY RESULT
+            # DISPLAY PREDICTION
             # =========================================
 
             st.subheader("Prediction Result")
@@ -85,13 +84,36 @@ if st.button("Predict Sentiment"):
                 st.info(final_prediction)
 
             # =========================================
-            # CONFIDENCE SCORE
+            # CONFIDENCE SCORE WITH LABEL
             # =========================================
 
-            confidence = model.decision_function(text_vector)
+            st.subheader("Confidence Scores")
 
-            st.subheader("Confidence Score")
-            st.write(confidence)
+            scores = model.decision_function(text_vector)
+
+            # Multiclass
+            if len(scores.shape) > 1:
+
+                scores = scores[0]
+
+                for i, score in enumerate(scores):
+
+                    if i in label_map:
+                        label = label_map[i]
+                    else:
+                        label = str(i)
+
+                    st.write(f"{label} : {round(score, 2)}")
+
+            # Binary classification
+            else:
+
+                score = scores[0]
+
+                if score > 0:
+                    st.write(f"Positive : {round(score, 2)}")
+                else:
+                    st.write(f"Negative : {round(abs(score), 2)}")
 
         except Exception as e:
             st.error(f"Error: {e}")

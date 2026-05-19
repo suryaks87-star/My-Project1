@@ -1,133 +1,76 @@
 # =========================================
-# SENTIMENT ANALYSIS USING SVM
+# SENTIMENT PREDICTION ONLY
 # =========================================
 
 import streamlit as st
-import pandas as pd
 import pickle
+import numpy as np
 
-from sklearn.model_selection import train_test_split
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.svm import LinearSVC
-from sklearn.metrics import accuracy_score, classification_report
+# =========================================
+# LOAD MODEL
+# =========================================
+
+with open("sentiment_model2.pkl", "rb") as f:
+    saved_data = pickle.load(f)
+
+model = saved_data["model"]
+vectorizer = saved_data["vectorizer"]
 
 # =========================================
 # TITLE
 # =========================================
 
-st.title("Sentiment Analysis using SVM")
+st.title("Sentiment Analysis Predictor")
 
 # =========================================
-# FILE UPLOAD
+# USER INPUT
 # =========================================
 
-uploaded_file = st.file_uploader(
-    "Upload Excel Dataset",
-    type=["xlsx"]
-)
+user_input = st.text_area("Enter your text")
 
 # =========================================
-# IF FILE EXISTS
+# PREDICT BUTTON
 # =========================================
-if uploaded_file is not None:
-    try:
-        # Read Excel
-        df = pd.read_excel(uploaded_file)
 
-        st.subheader("Dataset Preview")
-        st.write(df.head())
+if st.button("Predict Sentiment"):
 
-        st.subheader("Column Names")
-        st.write(df.columns)
+    if user_input.strip() != "":
 
-        # Change these according to your dataset
-        X = df["review"]
-        y = df["sentiment"]
+        # Transform text
+        text_vector = vectorizer.transform([user_input])
 
-        # =========================================
-        # SPLIT DATA
-        # =========================================
+        # Prediction
+        prediction = model.predict(text_vector)[0]
 
-        X_train, X_test, y_train, y_test = train_test_split(
-            X,
-            y,
-            test_size=0.2,
-            random_state=42
-        )
+        st.subheader("Prediction")
+        st.success(prediction)
 
         # =========================================
-        # TF-IDF
+        # PROBABILITY SCORE
         # =========================================
 
-        vectorizer = TfidfVectorizer(
-            stop_words='english',
-            max_features=5000
-        )
+        try:
 
-        X_train_vec = vectorizer.fit_transform(X_train)
-        X_test_vec = vectorizer.transform(X_test)
+            # For models supporting probability
+            probabilities = model.predict_proba(text_vector)[0]
 
-        # =========================================
-        # MODEL
-        # =========================================
+            classes = model.classes_
 
-        model = LinearSVC()
+            st.subheader("Probability Scores")
 
-        model.fit(X_train_vec, y_train)
+            for cls, prob in zip(classes, probabilities):
+                st.write(f"{cls}: {prob:.2%}")
 
-        # =========================================
-        # PREDICTION
-        # =========================================
+        except:
 
-        y_pred = model.predict(X_test_vec)
+            # LinearSVC does not support predict_proba
+            decision = model.decision_function(text_vector)[0]
 
-        # =========================================
-        # ACCURACY
-        # =========================================
+            confidence = abs(decision)
 
-        accuracy = accuracy_score(y_test, y_pred)
+            st.subheader("Confidence Score")
 
-        st.subheader("Accuracy")
-        st.write(accuracy)
+            st.write(f"Confidence: {confidence:.2f}")
 
-        st.subheader("Classification Report")
-        st.text(classification_report(y_test, y_pred))
-
-        # =========================================
-        # SAVE MODEL
-        # =========================================
-
-        with open("sentiment_model2.pkl", "wb") as f:
-            pickle.dump({
-                "model": model,
-                "vectorizer": vectorizer
-            }, f)
-
-        st.success("Model saved as sentiment_model2.pkl")
-
-        # =========================================
-        # CUSTOM INPUT
-        # =========================================
-
-        st.subheader("Custom Sentiment Prediction")
-
-        user_input = st.text_area("Enter Text")
-
-        if st.button("Predict"):
-
-            if user_input.strip() != "":
-
-                user_vec = vectorizer.transform([user_input])
-
-                prediction = model.predict(user_vec)
-
-                st.success(f"Prediction: {prediction[0]}")
-
-            else:
-                st.warning("Please enter text")
-
-    except Exception as e:
-        st.error(f"Error: {e}")
-
-else:
-    st.info("Please upload an Excel dataset")
+    else:
+        st.warning("Please enter some text")

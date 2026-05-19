@@ -7,4 +7,5 @@ nltk
 matplotlib
 wordcloud
 seaborn
+textblob
 

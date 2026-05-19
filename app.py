@@ -31,7 +31,6 @@ uploaded_file = st.file_uploader(
 # =========================================
 if uploaded_file is not None:
     try:
-
         # Read Excel
         df = pd.read_excel(uploaded_file)
 

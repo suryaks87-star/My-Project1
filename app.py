@@ -1,5 +1,5 @@
 # =========================================
-# SENTIMENT PREDICTION ONLY
+# SENTIMENT PREDICTION
 # =========================================
 
 import streamlit as st
@@ -19,39 +19,37 @@ vectorizer = saved_data["vectorizer"]
 # TITLE
 # =========================================
 
-st.title("Sentiment Analysis Predictor")
+st.title("Sentiment Analysis")
 
 # =========================================
 # USER INPUT
 # =========================================
 
-user_input = st.text_area("Enter your text")
+user_input = st.text_area("Enter Text")
 
 # =========================================
-# PREDICT BUTTON
+# PREDICTION
 # =========================================
 
-if st.button("Predict Sentiment"):
+if st.button("Predict"):
 
     if user_input.strip() != "":
 
         # Convert text
         text_vector = vectorizer.transform([user_input])
 
-        # Prediction
+        # Predict sentiment
         prediction = model.predict(text_vector)[0]
 
+        # Show result
         st.subheader("Prediction")
         st.success(prediction)
 
-        # =========================================
-        # CONFIDENCE SCORE
-        # =========================================
-
-        confidence = abs(model.decision_function(text_vector)[0])
+        # Confidence Score
+        confidence = model.decision_function(text_vector)
 
         st.subheader("Confidence Score")
-        st.write(round(confidence, 2))
+        st.write(confidence)
 
     else:
         st.warning("Please enter text")

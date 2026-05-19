@@ -6,7 +6,3 @@ streamlit
 nltk
 matplotlib
 wordcloud
-pandas
-numpy
-scikit-learn
-openpyxl

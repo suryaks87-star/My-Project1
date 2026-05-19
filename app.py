@@ -1,7 +1,8 @@
 # =========================================
-# SENTIMENT ANALYSIS USING SVM (EXCEL FILE)
+# SENTIMENT ANALYSIS USING SVM
 # =========================================
 
+import streamlit as st
 import pandas as pd
 import pickle
 
@@ -11,95 +12,125 @@ from sklearn.svm import LinearSVC
 from sklearn.metrics import accuracy_score, classification_report
 
 # =========================================
-# LOAD EXCEL DATASET
+# TITLE
 # =========================================
 
-# Replace with your Excel filename
-df = pd.read_excel("dataset.xlsx")
-
-print(df.head())
+st.title("Sentiment Analysis using SVM")
 
 # =========================================
-# CHECK COLUMN NAMES
+# FILE UPLOAD
 # =========================================
 
-print(df.columns)
-
-# Example:
-# review -> text column
-# sentiment -> output column
-
-X = df["review"]
-y = df["sentiment"]
-
-# =========================================
-# TRAIN TEST SPLIT
-# =========================================
-
-X_train, X_test, y_train, y_test = train_test_split(
-    X,
-    y,
-    test_size=0.2,
-    random_state=42
+uploaded_file = st.file_uploader(
+    "Upload Excel Dataset",
+    type=["xlsx"]
 )
 
 # =========================================
-# TF-IDF VECTORIZATION
+# IF FILE EXISTS
 # =========================================
 
-vectorizer = TfidfVectorizer(
-    stop_words='english',
-    max_features=5000
-)
+if uploaded_file is not None:
 
-X_train_vec = vectorizer.fit_transform(X_train)
-X_test_vec = vectorizer.transform(X_test)
+    try:
 
-# =========================================
-# SVM MODEL
-# =========================================
+        # Read Excel
+        df = pd.read_excel(uploaded_file)
 
-model = LinearSVC()
+        st.subheader("Dataset Preview")
+        st.write(df.head())
 
-model.fit(X_train_vec, y_train)
+        st.subheader("Column Names")
+        st.write(df.columns)
 
-# =========================================
-# PREDICTIONS
-# =========================================
+        # Change these according to your dataset
+        X = df["review"]
+        y = df["sentiment"]
 
-y_pred = model.predict(X_test_vec)
+        # =========================================
+        # SPLIT DATA
+        # =========================================
 
-# =========================================
-# ACCURACY
-# =========================================
+        X_train, X_test, y_train, y_test = train_test_split(
+            X,
+            y,
+            test_size=0.2,
+            random_state=42
+        )
 
-accuracy = accuracy_score(y_test, y_pred)
+        # =========================================
+        # TF-IDF
+        # =========================================
 
-print("Accuracy :", accuracy)
+        vectorizer = TfidfVectorizer(
+            stop_words='english',
+            max_features=5000
+        )
 
-print("\nClassification Report:\n")
-print(classification_report(y_test, y_pred))
+        X_train_vec = vectorizer.fit_transform(X_train)
+        X_test_vec = vectorizer.transform(X_test)
 
-# =========================================
-# SAVE MODEL
-# =========================================
+        # =========================================
+        # MODEL
+        # =========================================
 
-with open("sentiment_model2.pkl", "wb") as f:
-    pickle.dump({
-        "model": model,
-        "vectorizer": vectorizer
-    }, f)
+        model = LinearSVC()
 
-print("Model saved successfully")
+        model.fit(X_train_vec, y_train)
 
-# =========================================
-# TEST CUSTOM INPUT
-# =========================================
+        # =========================================
+        # PREDICTION
+        # =========================================
 
-sample = ["This product is really good"]
+        y_pred = model.predict(X_test_vec)
 
-sample_vec = vectorizer.transform(sample)
+        # =========================================
+        # ACCURACY
+        # =========================================
 
-prediction = model.predict(sample_vec)
+        accuracy = accuracy_score(y_test, y_pred)
 
-print("Prediction :", prediction[0])
+        st.subheader("Accuracy")
+        st.write(accuracy)
+
+        st.subheader("Classification Report")
+        st.text(classification_report(y_test, y_pred))
+
+        # =========================================
+        # SAVE MODEL
+        # =========================================
+
+        with open("sentiment_model2.pkl", "wb") as f:
+            pickle.dump({
+                "model": model,
+                "vectorizer": vectorizer
+            }, f)
+
+        st.success("Model saved as sentiment_model2.pkl")
+
+        # =========================================
+        # CUSTOM INPUT
+        # =========================================
+
+        st.subheader("Custom Sentiment Prediction")
+
+        user_input = st.text_area("Enter Text")
+
+        if st.button("Predict"):
+
+            if user_input.strip() != "":
+
+                user_vec = vectorizer.transform([user_input])
+
+                prediction = model.predict(user_vec)
+
+                st.success(f"Prediction: {prediction[0]}")
+
+            else:
+                st.warning("Please enter text")
+
+    except Exception as e:
+        st.error(f"Error: {e}")
+
+else:
+    st.info("Please upload an Excel dataset")

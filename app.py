@@ -30,7 +30,7 @@ with open("sentiment_model2.pkl", "rb") as f:
 
 model = saved_data["model"]
 vectorizer = saved_data["vectorizer"]
-
+'''
 # =========================================
 # FILE UPLOAD
 # =========================================
@@ -39,14 +39,12 @@ uploaded_file = st.file_uploader(
     "📂 Upload your Excel file",
     type=["xlsx"]
 )
-'''
+
 if uploaded_file is None:
     st.info("👆 Upload dataset to see analysis")
     st.stop()
 
-# =========================================
-# LOAD DATA
-# =========================================
+
 
 df = pd.read_excel(uploaded_file)
 '''
